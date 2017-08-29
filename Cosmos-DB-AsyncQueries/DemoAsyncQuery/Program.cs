@@ -18,21 +18,13 @@ namespace DemoAsyncQuery
         #endregion
 
         private const string SERVICE_ENDPOINT =
-            "https://cosmosdocvpl.documents.azure.com:443/";
+            "e.g. https://myaccountname.documents.azure.com:443/";
         private const string AUTH_KEY =
-            "SmDpmzcv6ZeIcwdWt2Gl1luGEAci50MVd7Me7d1v9v1xlgSFSzxNl9ojnVaHAgGgY6vgddqzA39WmvcKkH4q0g==";
+            "PRIMARY OR SECONDARY KEY OF THE ACCOUNT";
         private const string DATABASE =
-            "mydb";
+            "NAME OF YOUR DATABASE";
         private const string COLLECTION =
-            "mycollection";
-        //private const string SERVICE_ENDPOINT =
-        //    "e.g. https://myaccountname.documents.azure.com:443/";
-        //private const string AUTH_KEY =
-        //    "PRIMARY OR SECONDARY KEY OF THE ACCOUNT";
-        //private const string DATABASE =
-        //    "NAME OF YOUR DATABASE";
-        //private const string COLLECTION =
-        //    "NAME OF YOUR COLLECTION WITHIN THE DATABASE";
+            "NAME OF YOUR COLLECTION WITHIN THE DATABASE";
 
         static void Main(string[] args)
         {
