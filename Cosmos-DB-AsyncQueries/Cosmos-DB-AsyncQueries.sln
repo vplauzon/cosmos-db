@@ -3,7 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoAsyncQuery", "DemoAsyncQuery\DemoAsyncQuery.csproj", "{F8274C59-0BDF-4580-8F9B-9635EEEFDBA9}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F8274C59-0BDF-4580-8F9B-9635EEEFDBA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8274C59-0BDF-4580-8F9B-9635EEEFDBA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8274C59-0BDF-4580-8F9B-9635EEEFDBA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8274C59-0BDF-4580-8F9B-9635EEEFDBA9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
