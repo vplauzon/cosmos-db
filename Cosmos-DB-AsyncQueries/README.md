@@ -1,4 +1,4 @@
-#Cosmos DB Async Queries
+# Cosmos DB Async Queries
 
 This simple demo shows how to query Cosmos DB asynchronously in C#.
 
