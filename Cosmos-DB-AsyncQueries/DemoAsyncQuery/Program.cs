@@ -45,11 +45,12 @@ namespace DemoAsyncQuery
             var collectionUri = UriFactory.CreateDocumentCollectionUri(DATABASE, COLLECTION);
 
             await TestAllGenericDocumentsAsync(client, collectionUri);
+            await TestAllGenericDocumentsPrintAsYouGoAsync(client, collectionUri);
             await TestFilterGenericDocumentsAsync(client, collectionUri);
             await TestFilterMinimalDocumentsAsync(client, collectionUri);
         }
 
-        private static async Task TestAllGenericDocumentsAsync(
+        private async static Task TestAllGenericDocumentsAsync(
             DocumentClient client,
             Uri collectionUri)
         {
@@ -73,7 +74,28 @@ namespace DemoAsyncQuery
             Console.WriteLine();
         }
 
-        private static async Task TestFilterGenericDocumentsAsync(
+        private async static Task TestAllGenericDocumentsPrintAsYouGoAsync(
+            DocumentClient client,
+            Uri collectionUri)
+        {
+            var query = client.CreateDocumentQuery(
+                collectionUri,
+                new FeedOptions
+                {
+                    EnableCrossPartitionQuery = true
+                });
+            var queryAll = query.AsDocumentQuery();
+
+            Console.WriteLine("Collection IDs printed out just-in-time (JIT):");
+
+            var count = await ProcessAllResultsAsync(queryAll, (d) => Console.WriteLine(d.Id));
+
+            Console.WriteLine($"There was {count} items in the collection");
+
+            Console.WriteLine();
+        }
+
+        private async static Task TestFilterGenericDocumentsAsync(
             DocumentClient client,
             Uri collectionUri)
         {
@@ -99,7 +121,7 @@ namespace DemoAsyncQuery
             Console.WriteLine();
         }
 
-        private static async Task TestFilterMinimalDocumentsAsync(
+        private async static Task TestFilterMinimalDocumentsAsync(
             DocumentClient client,
             Uri collectionUri)
         {
@@ -140,6 +162,26 @@ namespace DemoAsyncQuery
             }
 
             return list.ToArray();
+        }
+
+        private async static Task<int> ProcessAllResultsAsync<T>(
+            IDocumentQuery<T> queryAll,
+            Action<T> action)
+        {
+            int count = 0;
+
+            while (queryAll.HasMoreResults)
+            {
+                var docs = await queryAll.ExecuteNextAsync<T>();
+
+                foreach (var d in docs)
+                {
+                    action(d);
+                    ++count;
+                }
+            }
+
+            return count;
         }
     }
 }
