@@ -21,21 +21,13 @@ namespace DemoDocDbOnGraph
         #endregion
 
         private const string SERVICE_ENDPOINT =
-            "https://cosmosvpl.documents.azure.com:443/";
+            "e.g. https://myaccountname.documents.azure.com:443/";
         private const string AUTH_KEY =
-            "A5MgfVNlGEzOBQTtYxwTUnqF9sXjXOYiaAlKGNrgTBG3vWj12jVpoFqqvCKVesFP4BuaRn1Xv3CLegugB7t8Zg==";
+            "PRIMARY OR SECONDARY KEY OF THE ACCOUNT";
         private const string DATABASE =
-            "mydb";
+            "NAME OF YOUR DATABASE";
         private const string COLLECTION =
-            "mygraph";
-        //private const string SERVICE_ENDPOINT =
-        //    "e.g. https://myaccountname.documents.azure.com:443/";
-        //private const string AUTH_KEY =
-        //    "PRIMARY OR SECONDARY KEY OF THE ACCOUNT";
-        //private const string DATABASE =
-        //    "NAME OF YOUR DATABASE";
-        //private const string COLLECTION =
-        //    "NAME OF YOUR COLLECTION WITHIN THE DATABASE";
+            "NAME OF YOUR COLLECTION WITHIN THE DATABASE";
 
         static void Main(string[] args)
         {
