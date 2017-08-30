@@ -1,7 +1,9 @@
 ﻿using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
+using Microsoft.Azure.Documents;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,6 +16,7 @@ namespace DemoDocDbOnGraph
         private class MinimalDoc
         {
             public string id { get; set; }
+            public bool? _isEdge { get; set; }
         }
         #endregion
 
@@ -44,7 +47,8 @@ namespace DemoDocDbOnGraph
             var client = new DocumentClient(new Uri(SERVICE_ENDPOINT), AUTH_KEY);
             var collectionUri = UriFactory.CreateDocumentCollectionUri(DATABASE, COLLECTION);
 
-            await ListAllDocumentsAsync(client, collectionUri);
+            //await ListAllDocumentsAsync(client, collectionUri);
+            await ListOnlyVerticesAsync(client, collectionUri);
         }
 
         private async static Task ListAllDocumentsAsync(
@@ -67,6 +71,31 @@ namespace DemoDocDbOnGraph
                 var json = GetJson(d);
 
                 Console.WriteLine(json);
+            }
+
+            Console.WriteLine();
+        }
+
+        private async static Task ListOnlyVerticesAsync(
+            DocumentClient client,
+            Uri collectionUri)
+        {
+            var query = client.CreateDocumentQuery<MinimalDoc>(
+                collectionUri,
+                new FeedOptions
+                {
+                    EnableCrossPartitionQuery = true
+                });
+            var queryVertex = (from d in query
+                               where !d._isEdge.HasValue
+                               select d).AsDocumentQuery();
+            var all = await GetAllResultsAsync(queryVertex);
+
+            Console.WriteLine($"Collection contains {all.Length} documents:");
+
+            foreach (var d in all)
+            {
+                Console.WriteLine(d.id);
             }
 
             Console.WriteLine();
