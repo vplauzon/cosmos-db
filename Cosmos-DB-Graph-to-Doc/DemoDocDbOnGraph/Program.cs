@@ -47,8 +47,11 @@ namespace DemoDocDbOnGraph
             var client = new DocumentClient(new Uri(SERVICE_ENDPOINT), AUTH_KEY);
             var collectionUri = UriFactory.CreateDocumentCollectionUri(DATABASE, COLLECTION);
 
-            //await ListAllDocumentsAsync(client, collectionUri);
-            await ListOnlyVerticesAsync(client, collectionUri);
+            await ListAllDocumentsAsync(client, collectionUri);
+            //await ListOnlyVerticesAsync(client, collectionUri);
+            //await AddTrivialVertexAsync(client, collectionUri);
+            //await AddVertexWithPropertiesAsync(client, collectionUri);
+            await AddEdgeAsync(client, collectionUri);
         }
 
         private async static Task ListAllDocumentsAsync(
@@ -69,6 +72,16 @@ namespace DemoDocDbOnGraph
             foreach (var d in all)
             {
                 var json = GetJson(d);
+
+                if (d.Id == "CarolToAlice")
+                {
+                    await client.DeleteDocumentAsync(
+                        d.SelfLink,
+                        new RequestOptions
+                        {
+                            PartitionKey = new PartitionKey(d.GetPropertyValue<string>("department"))
+                        });
+                }
 
                 Console.WriteLine(json);
             }
@@ -99,6 +112,69 @@ namespace DemoDocDbOnGraph
             }
 
             Console.WriteLine();
+        }
+
+        private async static Task AddTrivialVertexAsync(
+            DocumentClient client,
+            Uri collectionUri)
+        {
+            var response = await client.CreateDocumentAsync(
+                collectionUri,
+                new
+                {
+                    id = "Carol",
+                    label = "person",
+                    department = "support character"
+                });
+            var json = GetJson(response.Resource);
+
+            Console.WriteLine(json);
+        }
+
+        private async static Task AddVertexWithPropertiesAsync(
+            DocumentClient client,
+            Uri collectionUri)
+        {
+            var response = await client.CreateDocumentAsync(
+                collectionUri,
+                new
+                {
+                    id = "David",
+                    label = "person",
+                    age = new[] {
+                        new
+                        {
+                            id = Guid.NewGuid().ToString(),
+                            _value = 48
+                        }
+                    },
+                    department = "support character"
+                });
+            var json = GetJson(response.Resource);
+
+            Console.WriteLine(json);
+        }
+
+        private static async Task AddEdgeAsync(DocumentClient client, Uri collectionUri)
+        {
+            var response = await client.CreateDocumentAsync(
+                collectionUri,
+                new
+                {
+                    _isEdge = true,
+                    id = "CarolToAlice",
+                    label = "eavesdropOn",
+                    language = "English",
+                    department = "support character",
+                    _vertexId = "Carol",
+                    _vertexLabel = "person",
+                    _sink = "Alice",
+                    _sinkLabel = "person",
+                    _sinkPartition = "stereotype"
+                });
+            var json = GetJson(response.Resource);
+
+            Console.WriteLine(json);
         }
 
         private static string GetJson(object obj)
