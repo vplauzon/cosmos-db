@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "AzureResourceGroup1", "AzureResourceGroup1\AzureResourceGroup1.deployproj", "{E061F2B2-E2CF-4B87-8BA7-D868CEFC162B}"
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "DeploymentProject", "DeploymentProject\DeploymentProject.deployproj", "{E061F2B2-E2CF-4B87-8BA7-D868CEFC162B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
