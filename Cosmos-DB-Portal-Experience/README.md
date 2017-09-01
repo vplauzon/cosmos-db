@@ -1,9 +1,8 @@
-# Cosmos DB Graph to Doc
+# Cosmos DB Portal Experience
 
-This demo shows how to query Cosmos DB Graph using Cosmos DB DocumentDB (also called SQL) API in C#.
+This demo shows how to create Cosmos DB using an ARM Template and then alter the default experience from Graph to DocumentDB and vise versa.
 
-The demo sample is a Visual Studio 2017 solution with one project.  The entire non-boiler plate code is
-contained in [Program.cs](DemoDocDbOnGraph/Program.cs).
+The demo sample is a Visual Studio 2017 solution with one project.  The template is contained in [DocumentDB.json](DeploymentProject/DocumentDB.json).
 
 See the [following blog post](????)
 for details.
