@@ -7,9 +7,9 @@ The demo sample is a Visual Studio 2017 solution with one project.  The template
 See the [following blog post](http://vincentlauzon.com/2017/09/10/hacking-changing-cosmos-db-portal-experience-from-graph-to-sql/)
 for details.
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fvplauzon%2Fapp-gateway%2Fmaster%2Fvmss-path-routing-windows%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fvplauzon%2Fcosmos-db%2Fmaster%2FCosmos-DB-Portal-Experience%2FDeploymentProject%2FDocumentDB.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fvplauzon%2Fapp-gateway%2Fmaster%2Fvmss-path-routing-windows%2Fazuredeploy.json" target="_blank">
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fvplauzon%2Fcosmos-db%2Fmaster%2FCosmos-DB-Portal-Experience%2FDeploymentProject%2FDocumentDB.json" target="_blank">
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
