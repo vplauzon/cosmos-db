@@ -4,5 +4,12 @@ This demo shows how to create Cosmos DB using an ARM Template and then alter the
 
 The demo sample is a Visual Studio 2017 solution with one project.  The template is contained in [DocumentDB.json](DeploymentProject/DocumentDB.json).
 
-See the [following blog post](????)
+See the [following blog post](http://vincentlauzon.com/2017/09/10/hacking-changing-cosmos-db-portal-experience-from-graph-to-sql/)
 for details.
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fvplauzon%2Fapp-gateway%2Fmaster%2Fvmss-path-routing-windows%2Fazuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fvplauzon%2Fapp-gateway%2Fmaster%2Fvmss-path-routing-windows%2Fazuredeploy.json" target="_blank">
+    <img src="http://armviz.io/visualizebutton.png"/>
+</a>
