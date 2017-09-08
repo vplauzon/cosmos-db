@@ -1,4 +1,4 @@
-Name, Age, Country
-James, 25, Canada
-Laura, 27, USA
-Phil, 31, Mexico
+Label, Name, Age, Country
+Person, James, 25, Canada
+Person, Laura, 27, USA
+Person, Phil, 31, Mexico
