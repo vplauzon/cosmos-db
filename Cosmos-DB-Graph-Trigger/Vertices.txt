@@ -1,0 +1,4 @@
+Type, NameFrom, NameTo, Country
+Knows, James, Laura, Canada
+Knows, Laura, Phil, USA
+WorksWith, Laura, James, USA

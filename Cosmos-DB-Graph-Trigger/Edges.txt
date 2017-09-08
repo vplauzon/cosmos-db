@@ -1,0 +1,4 @@
+Name, Age, Country
+James, 25, Canada
+Laura, 27, USA
+Phil, 31, Mexico
