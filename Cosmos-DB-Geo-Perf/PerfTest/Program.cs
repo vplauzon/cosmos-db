@@ -5,11 +5,17 @@ using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Linq;
 using System.Diagnostics;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace ConsoleApp1
 {
     class Program
     {
+        private delegate SqlQuerySpec CreateQuerySpec(
+            double radius,
+            int edgeCount,
+            int iterationIndex);
+
         private const string SERVICE_ENDPOINT = "https://vplgeo.documents.azure.com:443/";
         private const string KEY = "XQxGE8fS5i4MompBN3AUtJg0Yd8lV0krXp9Q7gchVmw1C8u3AMkfgJpH3hsQr4TB7P4FWUmFrcqKeOeTvvQfOA==";
         private const string DB = "mydb";
@@ -18,66 +24,87 @@ namespace ConsoleApp1
 
         static void Main(string[] args)
         {
-            SpatialTestAsync().Wait();
-            //SprocTestAsync().Wait();
-            //CleanAsync().Wait();
+            TestAsync().Wait();
         }
 
-        private async static Task SpatialTestAsync()
+        private async static Task TestAsync()
         {
-            const int ITERATION_COUNT = 5;
+            await WithinTestAsync();
+            //await SprocTestAsync();
+            //await CleanAsync();
+        }
 
-            var client = new DocumentClient(new Uri(SERVICE_ENDPOINT), KEY);
-            var collectionUri = UriFactory.CreateDocumentCollectionUri(DB, COLLECTION);
-            var collection = (await client.ReadDocumentCollectionAsync(collectionUri)).Resource;
+        private async static Task WithinTestAsync()
+        {
             var centerStart = Tuple.Create(-73.94, 45.51);
             var centerIncrement = Tuple.Create(.01, .01);
 
-            Console.WriteLine("Radius, EdgeCount, AvgPointCount, Elaspsed");
-            for (var radius = .005; radius < 1; radius += .05)
+            await RunPerformanceAsync(
+                5,
+                new[] { .005, .05, .1, .25, 1 },
+                new[] { 4, 10, 25, 50 },
+                (radius, edgeCount, iterationIndex) =>
+                {
+                    var center = Tuple.Create(
+                        centerStart.Item1 + iterationIndex * centerIncrement.Item1,
+                        centerStart.Item2 + iterationIndex * centerIncrement.Item2);
+                    var polyCoordinates = new[] { CreatePolygon(center, radius, edgeCount) };
+                    var parameters = new SqlParameterCollection(new[]
+                    {
+                        new SqlParameter("@polyCoordinates", polyCoordinates)
+                    });
+                    var querySpec = new SqlQuerySpec(
+                        "SELECT VALUE COUNT(1) "
+                        + "FROM record r "
+                        + "WHERE ST_WITHIN(r.location,"
+                        + " {'type':'Polygon', 'coordinates':@polyCoordinates})",
+                        parameters);
+
+                    return querySpec;
+                });
+        }
+
+        private static async Task RunPerformanceAsync(
+            int iterationCount,
+            IEnumerable<double> radii,
+            IEnumerable<int> edgeCounts,
+            CreateQuerySpec createQuerySpec)
+        {
+            var client = new DocumentClient(new Uri(SERVICE_ENDPOINT), KEY);
+            var collectionUri = UriFactory.CreateDocumentCollectionUri(DB, COLLECTION);
+            var collection = (await client.ReadDocumentCollectionAsync(collectionUri)).Resource;
+
+            Console.WriteLine("Radius, EdgeCount, IterationCount, AvgMeasure, Elaspsed");
+            foreach (var radius in radii)
             {
-                for (var edgeCount = 4; edgeCount < 14; edgeCount += 4)
+                foreach (var edgeCount in edgeCounts)
                 {
                     var watch = Stopwatch.StartNew();
-                    long totalCount = 0;
+                    long totalMeasure = 0;
 
-                    for (var i = 0; i != ITERATION_COUNT; ++i)
+                    for (var i = 0; i != iterationCount; ++i)
                     {
-                        var center = Tuple.Create(
-                            centerStart.Item1 + i * centerIncrement.Item1,
-                            centerStart.Item2 + i * centerIncrement.Item2);
-                        var count = await SpacialIterationAsync(
-                            client, collectionUri, center, radius, edgeCount);
+                        var spec = createQuerySpec(radius, edgeCount, i);
+                        var query = client.CreateDocumentQuery<long>(
+                            collectionUri,
+                            spec,
+                            new FeedOptions { EnableCrossPartitionQuery = true });
+                        var measure =
+                            await QueryMeasureAsync(client, collectionUri, query);
 
-                        totalCount += count;
+                        totalMeasure += measure;
                     }
 
-                    Console.WriteLine($"{radius}, {edgeCount}, {(double)totalCount / ITERATION_COUNT}, {watch.Elapsed / ITERATION_COUNT}");
+                    Console.WriteLine($"{radius}, {edgeCount}, {iterationCount}, "
+                        + $"{(double)totalMeasure / iterationCount}, "
+                        + $"{watch.Elapsed / iterationCount}");
                 }
             }
         }
 
-        private static async Task<long> SpacialIterationAsync(
-            DocumentClient client,
-            Uri collectionUri,
-            Tuple<double, double> center,
-            double radius,
-            int edgeCount)
+        private static async Task<long> QueryMeasureAsync(
+            DocumentClient client, Uri collectionUri, IQueryable<long> query)
         {
-            var polyCoordinates = new[] { CreatePolygon(center, radius, edgeCount) };
-            var parameters = new SqlParameterCollection(new[]
-            {
-                new SqlParameter("@polyCoordinates", polyCoordinates)
-            });
-            var query = client.CreateDocumentQuery<long>(
-                collectionUri,
-                new SqlQuerySpec(
-                    "SELECT VALUE COUNT(1) "
-                    + "FROM record r "
-                    + "WHERE ST_WITHIN(r.location,"
-                    + " {'type':'Polygon', 'coordinates':@polyCoordinates})",
-                    parameters),
-                new FeedOptions { EnableCrossPartitionQuery = true });
             var queryAll = query.AsDocumentQuery();
 
             while (queryAll.HasMoreResults)
@@ -143,7 +170,6 @@ namespace ConsoleApp1
                     {
                         PartitionKey = new PartitionKey(doc.GetPropertyValue<string>("part"))
                     });
-                    //Console.WriteLine();
                 }
             }
         }
