@@ -50,7 +50,7 @@ namespace ConsoleApp1
                     var center = Tuple.Create(
                         centerStart.Item1 + iterationIndex * centerIncrement.Item1,
                         centerStart.Item2 + iterationIndex * centerIncrement.Item2);
-                    var polyCoordinates = new[] { CreatePolygon(center, radius, edgeCount) };
+                    var polyCoordinates = CreatePolygon(center, radius, edgeCount);
                     var parameters = new SqlParameterCollection(new[]
                     {
                         new SqlParameter("@polyCoordinates", polyCoordinates)
@@ -59,7 +59,7 @@ namespace ConsoleApp1
                         "SELECT VALUE COUNT(1) "
                         + "FROM record r "
                         + "WHERE ST_WITHIN(r.location,"
-                        + " {'type':'Polygon', 'coordinates':@polyCoordinates})",
+                        + " {'type':'Polygon', 'coordinates':[@polyCoordinates]})",
                         parameters);
 
                     return querySpec;
@@ -80,20 +80,37 @@ namespace ConsoleApp1
                     var center = Tuple.Create(
                         centerStart.Item1 + iterationIndex * centerIncrement.Item1,
                         centerStart.Item2 + iterationIndex * centerIncrement.Item2);
-                    var polyCoordinates = new[] { CreatePolygon(center, radius, edgeCount) };
+                    var polyCoordinates = CreatePolygon(center, radius, edgeCount);
                     var parameters = new SqlParameterCollection(new[]
                     {
-                        new SqlParameter("@polyCoordinates", polyCoordinates)
+                        new SqlParameter("@polyCoordinates", polyCoordinates),
+                        new SqlParameter("@center", CreatePoint(center))
                     });
                     var querySpec = new SqlQuerySpec(
-                        "SELECT VALUE COUNT(1) "
+                        "SELECT r3.r, r3.dist "
+                        + "FROM"
+                        + "("
+                        + "SELECT "
+                        + "r2.r, "
+                        + "ST_DISTANCE ({'type':'Point', 'coordinates':@center}, r2.r.location) AS dist "
+                        + "FROM"
+                        + "("
+                        + "SELECT r "
                         + "FROM record r "
                         + "WHERE ST_WITHIN(r.location,"
-                        + " {'type':'Polygon', 'coordinates':@polyCoordinates})",
+                        + " {'type':'Polygon', 'coordinates':[@polyCoordinates]})"
+                        + ") r2 "
+                        + ") r3 "
+                        + "ORDER BY r3.dist",
                         parameters);
 
                     return querySpec;
                 });
+        }
+
+        private static double[] CreatePoint(Tuple<double, double> center)
+        {
+            return new[] { center.Item1, center.Item2 };
         }
 
         private static async Task RunPerformanceAsync(
