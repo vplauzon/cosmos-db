@@ -29,7 +29,9 @@ namespace ConsoleApp1
 
         private async static Task TestAsync()
         {
-            await WithinTestAsync();
+            //await WithinTestAsync();
+            await WithinClosestTestAsync();
+
             //await SprocTestAsync();
             //await CleanAsync();
         }
@@ -41,7 +43,37 @@ namespace ConsoleApp1
 
             await RunPerformanceAsync(
                 5,
-                new[] { .005, .05, .1, .25, 1 },
+                new[] { .005, .05, .1 },
+                new[] { 4, 10, 25, 50 },
+                (radius, edgeCount, iterationIndex) =>
+                {
+                    var center = Tuple.Create(
+                        centerStart.Item1 + iterationIndex * centerIncrement.Item1,
+                        centerStart.Item2 + iterationIndex * centerIncrement.Item2);
+                    var polyCoordinates = new[] { CreatePolygon(center, radius, edgeCount) };
+                    var parameters = new SqlParameterCollection(new[]
+                    {
+                        new SqlParameter("@polyCoordinates", polyCoordinates)
+                    });
+                    var querySpec = new SqlQuerySpec(
+                        "SELECT VALUE COUNT(1) "
+                        + "FROM record r "
+                        + "WHERE ST_WITHIN(r.location,"
+                        + " {'type':'Polygon', 'coordinates':@polyCoordinates})",
+                        parameters);
+
+                    return querySpec;
+                });
+        }
+
+        private async static Task WithinClosestTestAsync()
+        {
+            var centerStart = Tuple.Create(-73.94, 45.51);
+            var centerIncrement = Tuple.Create(.01, .01);
+
+            await RunPerformanceAsync(
+                5,
+                new[] { .005, .05, .1 },
                 new[] { 4, 10, 25, 50 },
                 (radius, edgeCount, iterationIndex) =>
                 {
