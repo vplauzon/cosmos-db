@@ -30,7 +30,8 @@ namespace ConsoleApp1
         private async static Task TestAsync()
         {
             //await WithinTestAsync();
-            await WithinClosestTestAsync();
+            //await WithinClosestTestAsync();
+            await ClosestTestAsync();
 
             //await SprocTestAsync();
             //await CleanAsync();
@@ -102,6 +103,38 @@ namespace ConsoleApp1
                         + ") r2 "
                         + ") r3 "
                         + "ORDER BY r3.dist",
+                        parameters);
+
+                    return querySpec;
+                });
+        }
+
+        private async static Task ClosestTestAsync()
+        {
+            var centerStart = Tuple.Create(-73.94, 45.51);
+            var centerIncrement = Tuple.Create(.01, .01);
+
+            await RunPerformanceAsync(
+                5,
+                new[] { .005, .05, .1 },
+                new[] { 4, 10, 25, 50 },
+                (radius, edgeCount, iterationIndex) =>
+                {
+                    var center = Tuple.Create(
+                        centerStart.Item1 + iterationIndex * centerIncrement.Item1,
+                        centerStart.Item2 + iterationIndex * centerIncrement.Item2);
+                    var polyCoordinates = CreatePolygon(center, radius, edgeCount);
+                    var parameters = new SqlParameterCollection(new[]
+                    {
+                        new SqlParameter("@polyCoordinates", polyCoordinates),
+                        new SqlParameter("@center", CreatePoint(center))
+                    });
+                    var querySpec = new SqlQuerySpec(
+                        "SELECT "
+                        + "r, "
+                        + "ST_DISTANCE ({'type':'Point', 'coordinates':@center}, r.location) AS dist "
+                        + "FROM record r "
+                        + "ORDER BY ST_DISTANCE ({'type':'Point', 'coordinates':@center}, r.location)",
                         parameters);
 
                     return querySpec;
