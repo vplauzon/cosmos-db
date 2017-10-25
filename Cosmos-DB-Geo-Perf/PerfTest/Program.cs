@@ -31,7 +31,8 @@ namespace ConsoleApp1
         private async static Task TestAsync()
         {
             //await WithinTestAsync();
-            await ClosestTestAsync();
+            await FilteredWithinTestAsync();
+            //await ClosestTestAsync();
 
             //await SprocTestAsync();
             //await CleanAsync();
@@ -61,6 +62,42 @@ namespace ConsoleApp1
                             + "FROM record r "
                             + "WHERE ST_WITHIN(r.location,"
                             + " {'type':'Polygon', 'coordinates':[@polyCoordinates]})",
+                            new SqlParameter("@polyCoordinates", polyCoordinates));
+
+                        totalMeasure += measure;
+                    }
+                    Console.WriteLine($"{radius}, {edgeCount}, "
+                        + $"{(double)totalMeasure / ITERATION_COUNT}, "
+                        + $"{watch.Elapsed / ITERATION_COUNT}");
+                }
+            }
+        }
+
+        private async static Task FilteredWithinTestAsync()
+        {
+            var centerStart = Tuple.Create(-73.94, 45.51);
+            var centerIncrement = Tuple.Create(.01, .01);
+
+            Console.WriteLine("Radius, EdgeCount, # points, Elaspsed");
+            foreach (var radius in new[] { .005, .05, .1 })
+            {
+                foreach (var edgeCount in new[] { 4, 10, 25, 50 })
+                {
+                    var watch = Stopwatch.StartNew();
+                    long totalMeasure = 0;
+
+                    for (var i = 0; i != ITERATION_COUNT; ++i)
+                    {
+                        var center = Tuple.Create(
+                            centerStart.Item1 + i * centerIncrement.Item1,
+                            centerStart.Item2 + i * centerIncrement.Item2);
+                        var polyCoordinates = CreatePolygon(center, radius, edgeCount);
+                        var measure = await QueryCollectionAsync<long>(
+                            "SELECT VALUE COUNT(1) "
+                            + "FROM record r "
+                            + "WHERE ST_WITHIN(r.location,"
+                            + " {'type':'Polygon', 'coordinates':[@polyCoordinates]}) "
+                            + " AND r.profile.age<25",
                             new SqlParameter("@polyCoordinates", polyCoordinates));
 
                         totalMeasure += measure;
