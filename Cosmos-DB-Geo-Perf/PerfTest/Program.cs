@@ -11,6 +11,7 @@ namespace ConsoleApp1
 {
     class Program
     {
+        private const int ITERATION_COUNT = 5;
         private delegate SqlQuerySpec CreateQuerySpec(
             double radius,
             int edgeCount,
@@ -30,7 +31,6 @@ namespace ConsoleApp1
         private async static Task TestAsync()
         {
             //await WithinTestAsync();
-            //await WithinClosestTestAsync();
             await ClosestTestAsync();
 
             //await SprocTestAsync();
@@ -42,150 +42,87 @@ namespace ConsoleApp1
             var centerStart = Tuple.Create(-73.94, 45.51);
             var centerIncrement = Tuple.Create(.01, .01);
 
-            await RunPerformanceAsync(
-                5,
-                new[] { .005, .05, .1 },
-                new[] { 4, 10, 25, 50 },
-                (radius, edgeCount, iterationIndex) =>
-                {
-                    var center = Tuple.Create(
-                        centerStart.Item1 + iterationIndex * centerIncrement.Item1,
-                        centerStart.Item2 + iterationIndex * centerIncrement.Item2);
-                    var polyCoordinates = CreatePolygon(center, radius, edgeCount);
-                    var parameters = new SqlParameterCollection(new[]
-                    {
-                        new SqlParameter("@polyCoordinates", polyCoordinates)
-                    });
-                    var querySpec = new SqlQuerySpec(
-                        "SELECT VALUE COUNT(1) "
-                        + "FROM record r "
-                        + "WHERE ST_WITHIN(r.location,"
-                        + " {'type':'Polygon', 'coordinates':[@polyCoordinates]})",
-                        parameters);
-
-                    return querySpec;
-                });
-        }
-
-        private async static Task WithinClosestTestAsync()
-        {
-            var centerStart = Tuple.Create(-73.94, 45.51);
-            var centerIncrement = Tuple.Create(.01, .01);
-
-            await RunPerformanceAsync(
-                5,
-                new[] { .005, .05, .1 },
-                new[] { 4, 10, 25, 50 },
-                (radius, edgeCount, iterationIndex) =>
-                {
-                    var center = Tuple.Create(
-                        centerStart.Item1 + iterationIndex * centerIncrement.Item1,
-                        centerStart.Item2 + iterationIndex * centerIncrement.Item2);
-                    var polyCoordinates = CreatePolygon(center, radius, edgeCount);
-                    var parameters = new SqlParameterCollection(new[]
-                    {
-                        new SqlParameter("@polyCoordinates", polyCoordinates),
-                        new SqlParameter("@center", CreatePoint(center))
-                    });
-                    var querySpec = new SqlQuerySpec(
-                        "SELECT r3.r, r3.dist "
-                        + "FROM"
-                        + "("
-                        + "SELECT "
-                        + "r2.r, "
-                        + "ST_DISTANCE ({'type':'Point', 'coordinates':@center}, r2.r.location) AS dist "
-                        + "FROM"
-                        + "("
-                        + "SELECT r "
-                        + "FROM record r "
-                        + "WHERE ST_WITHIN(r.location,"
-                        + " {'type':'Polygon', 'coordinates':[@polyCoordinates]})"
-                        + ") r2 "
-                        + ") r3 "
-                        + "ORDER BY r3.dist",
-                        parameters);
-
-                    return querySpec;
-                });
-        }
-
-        private async static Task ClosestTestAsync()
-        {
-            var centerStart = Tuple.Create(-73.94, 45.51);
-            var centerIncrement = Tuple.Create(.01, .01);
-
-            await RunPerformanceAsync(
-                5,
-                new[] { .005, .05, .1 },
-                new[] { 4, 10, 25, 50 },
-                (radius, edgeCount, iterationIndex) =>
-                {
-                    var center = Tuple.Create(
-                        centerStart.Item1 + iterationIndex * centerIncrement.Item1,
-                        centerStart.Item2 + iterationIndex * centerIncrement.Item2);
-                    var polyCoordinates = CreatePolygon(center, radius, edgeCount);
-                    var parameters = new SqlParameterCollection(new[]
-                    {
-                        new SqlParameter("@polyCoordinates", polyCoordinates),
-                        new SqlParameter("@center", CreatePoint(center))
-                    });
-                    var querySpec = new SqlQuerySpec(
-                        "SELECT "
-                        + "r, "
-                        + "ST_DISTANCE ({'type':'Point', 'coordinates':@center}, r.location) AS dist "
-                        + "FROM record r "
-                        + "ORDER BY ST_DISTANCE ({'type':'Point', 'coordinates':@center}, r.location)",
-                        parameters);
-
-                    return querySpec;
-                });
-        }
-
-        private static double[] CreatePoint(Tuple<double, double> center)
-        {
-            return new[] { center.Item1, center.Item2 };
-        }
-
-        private static async Task RunPerformanceAsync(
-            int iterationCount,
-            IEnumerable<double> radii,
-            IEnumerable<int> edgeCounts,
-            CreateQuerySpec createQuerySpec)
-        {
-            var client = new DocumentClient(new Uri(SERVICE_ENDPOINT), KEY);
-            var collectionUri = UriFactory.CreateDocumentCollectionUri(DB, COLLECTION);
-            var collection = (await client.ReadDocumentCollectionAsync(collectionUri)).Resource;
-
-            Console.WriteLine("Radius, EdgeCount, IterationCount, AvgMeasure, Elaspsed");
-            foreach (var radius in radii)
+            Console.WriteLine("Radius, EdgeCount, # points, Elaspsed");
+            foreach (var radius in new[] { .005, .05, .1 })
             {
-                foreach (var edgeCount in edgeCounts)
+                foreach (var edgeCount in new[] { 4, 10, 25, 50 })
                 {
                     var watch = Stopwatch.StartNew();
                     long totalMeasure = 0;
 
-                    for (var i = 0; i != iterationCount; ++i)
+                    for (var i = 0; i != ITERATION_COUNT; ++i)
                     {
-                        var spec = createQuerySpec(radius, edgeCount, i);
-                        var query = client.CreateDocumentQuery<long>(
-                            collectionUri,
-                            spec,
-                            new FeedOptions { EnableCrossPartitionQuery = true });
-                        var measure =
-                            await QueryMeasureAsync(client, collectionUri, query);
+                        var center = Tuple.Create(
+                            centerStart.Item1 + i * centerIncrement.Item1,
+                            centerStart.Item2 + i * centerIncrement.Item2);
+                        var polyCoordinates = CreatePolygon(center, radius, edgeCount);
+                        var measure = await QueryCollectionAsync<long>(
+                            "SELECT VALUE COUNT(1) "
+                            + "FROM record r "
+                            + "WHERE ST_WITHIN(r.location,"
+                            + " {'type':'Polygon', 'coordinates':[@polyCoordinates]})",
+                            new SqlParameter("@polyCoordinates", polyCoordinates));
 
                         totalMeasure += measure;
                     }
-
-                    Console.WriteLine($"{radius}, {edgeCount}, {iterationCount}, "
-                        + $"{(double)totalMeasure / iterationCount}, "
-                        + $"{watch.Elapsed / iterationCount}");
+                    Console.WriteLine($"{radius}, {edgeCount}, "
+                        + $"{(double)totalMeasure / ITERATION_COUNT}, "
+                        + $"{watch.Elapsed / ITERATION_COUNT}");
                 }
             }
         }
 
-        private static async Task<long> QueryMeasureAsync(
-            DocumentClient client, Uri collectionUri, IQueryable<long> query)
+        private async static Task ClosestTestAsync()
+        {
+            var centerStart = Tuple.Create(-73.94433964264864, 45.51350017859535);
+            var centerIncrement = Tuple.Create(.01, .01);
+
+            Console.WriteLine("Radius, # points, Elaspsed");
+            foreach (var radius in new[] { 100, 1000, 3000, 10000 })
+            {
+                var watch = Stopwatch.StartNew();
+                long totalMeasure = 0;
+
+                for (var i = 0; i != ITERATION_COUNT; ++i)
+                {
+                    var center = Tuple.Create(
+                        centerStart.Item1 + i * centerIncrement.Item1,
+                        centerStart.Item2 + i * centerIncrement.Item2);
+                    var measure = await QueryCollectionAsync<long>(
+                        "SELECT "
+                        + "VALUE COUNT(1) "
+                        + "FROM record r "
+                        + "WHERE ST_DISTANCE (r.location, {'type':'Point', 'coordinates':@center})<@radius",
+                        new SqlParameter("@center", CreatePoint(center)),
+                        new SqlParameter("@radius", radius));
+
+                    totalMeasure += measure;
+                }
+                Console.WriteLine($"{radius}, {(double)totalMeasure / ITERATION_COUNT}, "
+                    + $"{watch.Elapsed / ITERATION_COUNT}");
+            }
+        }
+
+        private static async Task<T> QueryCollectionAsync<T>(
+            string queryText,
+            params SqlParameter[] sqlParameter)
+        {
+            var client = new DocumentClient(new Uri(SERVICE_ENDPOINT), KEY);
+            var collectionUri = UriFactory.CreateDocumentCollectionUri(DB, COLLECTION);
+            var collection = (await client.ReadDocumentCollectionAsync(collectionUri)).Resource;
+            var parameters = new SqlParameterCollection(sqlParameter);
+            var querySpec = new SqlQuerySpec(queryText, parameters);
+            var query = client.CreateDocumentQuery<T>(
+                collectionUri,
+                querySpec,
+                new FeedOptions { EnableCrossPartitionQuery = true });
+            var measure = await QueryMeasureAsync(client, collectionUri, query);
+
+            return measure;
+        }
+
+        private static async Task<T> QueryMeasureAsync<T>(
+            DocumentClient client, Uri collectionUri, IQueryable<T> query)
         {
             var queryAll = query.AsDocumentQuery();
 
@@ -197,6 +134,11 @@ namespace ConsoleApp1
             }
 
             throw new InvalidOperationException("Nothing returned from the service");
+        }
+
+        private static double[] CreatePoint(Tuple<double, double> center)
+        {
+            return new[] { center.Item1, center.Item2 };
         }
 
         private static double[][] CreatePolygon(
