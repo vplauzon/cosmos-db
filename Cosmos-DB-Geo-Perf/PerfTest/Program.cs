@@ -43,7 +43,7 @@ namespace ConsoleApp1
             var centerStart = Tuple.Create(-73.94, 45.51);
             var centerIncrement = Tuple.Create(.01, .01);
 
-            Console.WriteLine("Radius, EdgeCount, # points, Elaspsed");
+            Console.WriteLine("Radius, EdgeCount, # points, Elapsed");
             foreach (var radius in new[] { .005, .05, .1 })
             {
                 foreach (var edgeCount in new[] { 4, 10, 25, 50 })
@@ -114,7 +114,7 @@ namespace ConsoleApp1
             var centerStart = Tuple.Create(-73.94433964264864, 45.51350017859535);
             var centerIncrement = Tuple.Create(.01, .01);
 
-            Console.WriteLine("Radius, # points, Elaspsed");
+            Console.WriteLine("Radius, # points, Elapsed");
             foreach (var radius in new[] { 100, 1000, 3000, 10000 })
             {
                 var watch = Stopwatch.StartNew();
