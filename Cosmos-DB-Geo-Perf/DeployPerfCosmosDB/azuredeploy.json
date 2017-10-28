@@ -1,0 +1,133 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Cosmos DB Account Name": {
+      "type": "String"
+    }
+  },
+  "variables": {
+    "connectionName": "CosmosDB-Connection"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-04-08",
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "name": "[parameters('Cosmos DB Account Name')]",
+      "kind": "GlobalDocumentDB",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "defaultExperience": "DocumentDB"
+      },
+      "scale": null,
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "Session",
+          "maxIntervalInSeconds": 5,
+          "maxStalenessPrefix": 100
+        },
+        "name": "othernamevpl"
+      },
+      "dependsOn": []
+    },
+    {
+      "apiVersion": "2016-06-01",
+      "type": "Microsoft.Web/connections",
+      "name": "[variables('connectionName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "displayName": "[concat('Connection to Cosmos DB account \"', parameters('Cosmos DB Account Name'), '\"')]",
+        "api": {
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/documentdb')]"
+        },
+        "parameterValues": {
+          "databaseAccount": "[parameters('Cosmos DB Account Name')]",
+          "accessKey": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('Cosmos DB Account Name')), '2015-04-08').primaryMasterKey]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('Cosmos DB Account Name'))]"
+      ]
+    },
+    {
+      "apiVersion": "2016-06-01",
+      "type": "Microsoft.Logic/workflows",
+      "name": "RandomLoadCollectionApp",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "state": "Enabled",
+        "parameters": {
+          "$connections": {
+            "value": {
+              "documentdb": {
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('connectionName'))]",
+                "connectionName": "documentdb",
+                "id": "/subscriptions/a9f15356-c7b1-4864-980e-e9bca8b790dd/providers/Microsoft.Web/locations/westeurope/managedApis/documentdb"
+              }
+            }
+          }
+        },
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {}
+              }
+            }
+          },
+          "actions": {
+            "For_each": {
+              "foreach": "@range(0,4000)",
+              "actions": {
+                "Execute_stored_procedure": {
+                  "runAfter": {
+                    "GeneratePartition": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": "[\"@{outputs('GeneratePartition')}\", 300, 0.33]",
+                    "headers": {
+                      "x-ms-documentdb-partitionkey": "@{outputs('GeneratePartition')}"
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/dbs/@{encodeURIComponent('mydb')}/colls/@{encodeURIComponent('mycoll')}/sprocs/@{encodeURIComponent('createRecords')}"
+                  }
+                },
+                "GeneratePartition": {
+                  "runAfter": {},
+                  "type": "Compose",
+                  "inputs": "@rand(0,4000)"
+                }
+              },
+              "runAfter": {},
+              "type": "Foreach"
+            }
+          },
+          "outputs": {}
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', variables('connectionName'))]"
+      ]
+    }
+  ],
+  "outputs": {}
+}
