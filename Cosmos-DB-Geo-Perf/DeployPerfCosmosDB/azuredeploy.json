@@ -61,16 +61,50 @@
           "$connections": {
             "value": {
               "documentdb": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/', 'documentdb')]",
                 "connectionId": "[resourceId('Microsoft.Web/connections', variables('connectionName'))]",
-                "connectionName": "documentdb",
-                "id": "/subscriptions/a9f15356-c7b1-4864-980e-e9bca8b790dd/providers/Microsoft.Web/locations/westeurope/managedApis/documentdb"
+                "connectionName": "[variables('connectionName')]"
               }
             }
           }
         },
         "definition": {
           "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-          "contentVersion": "1.0.0.0",
+          "actions": {
+            "For_each": {
+              "type": "Foreach",
+              "foreach": "@range(0,4000)",
+              "actions": {
+                "Execute_stored_procedure": {
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/dbs/@{encodeURIComponent('mydb')}/colls/@{encodeURIComponent('mycoll')}/sprocs/@{encodeURIComponent('createRecords')}",
+                    "headers": {
+                      "x-ms-documentdb-partitionkey": "@{outputs('GeneratePartition')}"
+                    },
+                    "body": "[[\"@{outputs('GeneratePartition')}\", 300, .33]]"
+                  },
+                  "runAfter": {
+                    "GeneratePartition": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "GeneratePartition": {
+                  "type": "Compose",
+                  "inputs": "@rand(0,4000)",
+                  "runAfter": {}
+                }
+              },
+              "runAfter": {}
+            }
+          },
           "parameters": {
             "$connections": {
               "defaultValue": {},
@@ -86,41 +120,7 @@
               }
             }
           },
-          "actions": {
-            "For_each": {
-              "foreach": "@range(0,4000)",
-              "actions": {
-                "Execute_stored_procedure": {
-                  "runAfter": {
-                    "GeneratePartition": [
-                      "Succeeded"
-                    ]
-                  },
-                  "type": "ApiConnection",
-                  "inputs": {
-                    "body": "[\"@{outputs('GeneratePartition')}\", 300, 0.33]",
-                    "headers": {
-                      "x-ms-documentdb-partitionkey": "@{outputs('GeneratePartition')}"
-                    },
-                    "host": {
-                      "connection": {
-                        "name": "@parameters('$connections')['documentdb']['connectionId']"
-                      }
-                    },
-                    "method": "post",
-                    "path": "/dbs/@{encodeURIComponent('mydb')}/colls/@{encodeURIComponent('mycoll')}/sprocs/@{encodeURIComponent('createRecords')}"
-                  }
-                },
-                "GeneratePartition": {
-                  "runAfter": {},
-                  "type": "Compose",
-                  "inputs": "@rand(0,4000)"
-                }
-              },
-              "runAfter": {},
-              "type": "Foreach"
-            }
-          },
+          "contentVersion": "1.0.0.0",
           "outputs": {}
         }
       },

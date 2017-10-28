@@ -7,6 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerfTest", "PerfTest\PerfTe
 EndProject
 Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "DeployPerfCosmosDB", "DeployPerfCosmosDB\DeployPerfCosmosDB.deployproj", "{800B6482-8901-492F-8113-3D86116BE39B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{79D82358-54F1-456D-8C11-8E58B405D008}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
