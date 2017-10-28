@@ -17,8 +17,8 @@ namespace ConsoleApp1
             int edgeCount,
             int iterationIndex);
 
-        private const string SERVICE_ENDPOINT = "https://vplgeo.documents.azure.com:443/";
-        private const string KEY = "XQxGE8fS5i4MompBN3AUtJg0Yd8lV0krXp9Q7gchVmw1C8u3AMkfgJpH3hsQr4TB7P4FWUmFrcqKeOeTvvQfOA==";
+        private const string SERVICE_ENDPOINT = "https://<YOUR COSMOS DB ACCOUNT NAME>.documents.azure.com:443/";
+        private const string KEY = "<YOUR KEY>";
         private const string DB = "mydb";
         private const string COLLECTION = "mycoll";
         private const string SPROC = "createRecords";
