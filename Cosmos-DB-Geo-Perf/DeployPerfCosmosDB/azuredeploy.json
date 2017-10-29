@@ -4,6 +4,18 @@
   "parameters": {
     "Cosmos DB Account Name": {
       "type": "String"
+    },
+    "Partition Count": {
+      "type": "int",
+      "defaultValue": 4000
+    },
+    "Records per partition": {
+      "type": "int",
+      "defaultValue": 300
+    },
+    "Geo Ratio": {
+      "type": "string",
+      "defaultValue": "0.33"
     }
   },
   "variables": {
@@ -66,6 +78,15 @@
                 "connectionName": "[variables('connectionName')]"
               }
             }
+          },
+          "$partitionCount": {
+            "value": "[parameters('Partition Count')]"
+          },
+          "$recordsPerPartition": {
+            "value": "[parameters('Records per partition')]"
+          },
+          "$geoRatio": {
+            "value": "[parameters('Geo Ratio')]"
           }
         },
         "definition": {
@@ -73,7 +94,7 @@
           "actions": {
             "For_each": {
               "type": "Foreach",
-              "foreach": "@range(0,4000)",
+              "foreach": "@range(0, parameters('$partitionCount'))",
               "actions": {
                 "Execute_stored_procedure": {
                   "type": "ApiConnection",
@@ -88,7 +109,7 @@
                     "headers": {
                       "x-ms-documentdb-partitionkey": "@{outputs('GeneratePartition')}"
                     },
-                    "body": "[[\"@{outputs('GeneratePartition')}\", 300, .33]]"
+                    "body": "@concat('[\"', outputs('GeneratePartition'), '\", ', parameters('$recordsPerPartition'), ', ', parameters('$geoRatio'), ']')"
                   },
                   "runAfter": {
                     "GeneratePartition": [
@@ -98,7 +119,7 @@
                 },
                 "GeneratePartition": {
                   "type": "Compose",
-                  "inputs": "@rand(0,4000)",
+                  "inputs": "@rand(0,parameters('$partitionCount'))",
                   "runAfter": {}
                 }
               },
@@ -109,6 +130,18 @@
             "$connections": {
               "defaultValue": {},
               "type": "Object"
+            },
+            "$partitionCount": {
+              "defaultValue": {},
+              "type": "int"
+            },
+            "$recordsPerPartition": {
+              "defaultValue": {},
+              "type": "int"
+            },
+            "$geoRatio": {
+              "defaultValue": {},
+              "type": "string"
             }
           },
           "triggers": {
