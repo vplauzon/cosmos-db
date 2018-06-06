@@ -1,0 +1,13 @@
+{
+  "$schema": "TODO",
+  "collections": [
+    {
+      "name": "mine",
+      "settings": {
+      }
+    },
+    {
+      "name": "yours"
+    }
+  ]
+}
