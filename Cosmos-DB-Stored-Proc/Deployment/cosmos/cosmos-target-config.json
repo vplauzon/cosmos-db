@@ -17,6 +17,10 @@
             {
               "name": "fillPartition",
               "targetUrl": "fill-partition-sproc.js"
+            },
+            {
+              "name": "a-query",
+              "targetUrl": "a-query.js"
             }
           ]
         }
