@@ -11,7 +11,7 @@
       "collections": [
         {
           "name": "my-collection",
-          "partitionKey": "/dept",
+          "partitionKey": "/part",
           "requestUnits": 1000,
           "storedProcedures": [
             {
