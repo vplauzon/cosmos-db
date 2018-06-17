@@ -23,7 +23,7 @@
                 }
             }
 
-            response.setBody(countDict);
+            response.setBody(oneCount);
         });
 
     if (!isAccepted) {
