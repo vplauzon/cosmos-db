@@ -25,7 +25,7 @@
   <ItemGroup>
     <Content Include="azuredeploy.json" />
     <Content Include="azuredeploy.parameters.json" />
-    <None Include="cosmos\a-query.js" />
+    <None Include="cosmos\a-query-flat.js" />
     <None Include="cosmos\fill-partition-sproc.js" />
     <None Include="cosmos\cosmos-target-config.json" />
     <None Include="Deployment.targets">

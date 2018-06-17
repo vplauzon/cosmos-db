@@ -3,11 +3,11 @@
     var collection = getContext().getCollection();
     var oneCount = 0;
 
-    // Query documents for all captions
+    //  Query all documents
     var isAccepted = collection.queryDocuments(
         collection.getSelfLink(),
         "SELECT * FROM c",
-        null,
+        {},
         function (err, feed, responseOptions) {
             if (err) {
                 throw err;
@@ -17,12 +17,14 @@
                 for (var i = 0; i != feed.length; ++i) {
                     var doc = feed[i];
 
+                    //  Filter document with 'oneThird' == 1
                     if (doc.oneThird == 1) {
                         ++oneCount;
                     }
                 }
             }
 
+            //  Return the count in the response
             response.setBody(oneCount);
         });
 
