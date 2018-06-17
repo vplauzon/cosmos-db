@@ -1,0 +1,26 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/vplauzon/cosmos-db-target-config/master/documentation/cosmos-target-schema.json",
+  "destructiveFlags": [
+    "database",
+    "collection",
+    "storedProcedure"
+  ],
+  "databases": [
+    {
+      "name": "my-db",
+      "collections": [
+        {
+          "name": "my-collection",
+          "partitionKey": "/dept",
+          "requestUnits": 1000,
+          "storedProcedures": [
+            {
+              "name": "fillPartition",
+              "targetUrl": "fill-partition-sproc.js"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

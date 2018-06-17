@@ -4,7 +4,10 @@
   "parameters": {
   },
   "variables": {
-    "Account Name": "[concat('cosmos-', uniqueString(concat(resourceGroup().id, 'cosmos')))]"
+    "Target URL Prefix": "https://raw.githubusercontent.com/vplauzon/cosmos-db/master/Cosmos-DB-Stored-Proc/Deployment/cosmos/",
+    "Target URL": "[concat(variables('Target URL Prefix'), 'cosmos-target-config.json')]",
+    "Account Name": "[concat('cosmos-test-account-', uniqueString(concat(subscription().id, resourceGroup().id, 'cosmos')))]",
+    "Account Id": "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('Account Name'))]"
   },
   "resources": [
     {
@@ -18,7 +21,53 @@
         "databaseAccountOfferType": "Standard",
         "capabilities": []
       }
+    },
+    {
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2018-04-01",
+      "name": "container-group",
+      "location": "East US",
+      "dependsOn": [
+        "[variables('Account Id')]"
+      ],
+      "properties": {
+        "restartPolicy": "Never",
+        "containers": [
+          {
+            "name": "cosmos-target",
+            "properties": {
+              "image": "vplauzon/cosmos-db-target-config",
+              "environmentVariables": [
+                {
+                  "name": "ACCOUNT_ENDPOINT",
+                  "value": "[reference(variables('Account Id')).documentEndpoint]"
+                },
+                {
+                  "name": "ACCOUNT_KEY",
+                  "value": "[listKeys(variables('Account Id'), '2015-04-08').primaryMasterKey]"
+                },
+                {
+                  "name": "TARGET_URL",
+                  "value": "[variables('Target URL')]"
+                }
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": 1,
+                  "memoryInGb": 0.2
+                }
+              }
+            }
+          }
+        ],
+        "osType": "Linux"
+      }
     }
   ],
-  "outputs": {}
+  "outputs": {
+    "Target Config URL": {
+      "type": "string",
+      "value": "[variables('Target URL')]"
+    }
+  }
 }
