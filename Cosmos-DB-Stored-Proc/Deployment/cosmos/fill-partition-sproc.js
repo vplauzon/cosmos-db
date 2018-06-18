@@ -1,9 +1,10 @@
 ﻿function createRecords(partitionKey, recordCount) {
     var context = getContext();
     var collection = context.getCollection();
-    var recordCreated = 0;
 
-    for (i = 0; i < recordCount; i++) {
+    createRecord(0);
+
+    function createRecord(recordCreated) {
         var randomString = "";
 
         for (j = 0; j < 1024; ++j) {
@@ -12,6 +13,7 @@
 
         var documentToCreate = {
             part: partitionKey,
+            recordNumber: i,
             oneThird: Math.round(Math.random() * 3),
             name: randomString.substr(0, 64),
             profile: {
@@ -32,14 +34,16 @@
                 if (err) {
                     throw new Error('Error' + err.message);
                 }
+                else if (recordCreated < recordCount) {
+                    createRecord(recordCreated + 1);
+                }
                 else {
-                    ++recordCreated;
+                    context.getResponse().setBody(recordCreated);
                 }
             });
 
-        if (!accepted)
-            return;
+        if (!accepted) {
+            context.getResponse().setBody("Couldn't rearch the record count ; stopped at " + recordCreated);
+        }
     }
-
-    context.getResponse().setBody(recordCreated);
 }
