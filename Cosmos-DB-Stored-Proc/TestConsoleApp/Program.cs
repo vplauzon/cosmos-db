@@ -8,9 +8,9 @@ namespace TestConsoleApp
     class Program
     {
         private const string ENDPOINT =
-            "https://cosmos-test-account-avboxnch6jlig.documents.azure.com:443/";
+            "https://cosmos-test-account-genpmujkde7iu.documents.azure.com:443/";
         private const string KEY =
-            "AlBwjdslCY1FlmR3zOU5DEzeRYQmu447EzHYYWJk7bMGXz32PAyRVjLwho9qawtw746xNKdM4WVf2z4SzRmbKA==";
+            "hxXWccELPp8eYavWGqlzRopCB0d5d4jTXFA3gGs58PEstFZmCkq4dF24Jjuv8zxC3iKKGCxwXcZ401uhyt8lGg==";
         private const string DB = "my-db";
         private const string COLLECTION = "my-collection";
         private const string DEFAULT_PARTITION_KEY = "ABC";
@@ -33,7 +33,7 @@ namespace TestConsoleApp
 
         private static async Task MainAsync()
         {
-            await FillPartitionAsync();
+            //await FillPartitionAsync();
             //await QueryAsync();
         }
 

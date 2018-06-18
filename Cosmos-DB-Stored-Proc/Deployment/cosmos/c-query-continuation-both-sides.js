@@ -56,7 +56,7 @@ function countOnes(sprocContinuationToken) {
                     query(responseOptions.continuation)
                 } else {
                     //  Return the count in the response
-                    response.setBody({ count: oneCount, queryContinuation: null });
+                    response.setBody({ count: oneCount, continuation: null });
                 }
             });
 
