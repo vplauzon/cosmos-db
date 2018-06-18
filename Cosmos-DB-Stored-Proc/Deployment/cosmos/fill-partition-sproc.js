@@ -7,7 +7,7 @@
     function createRecord(recordCreated) {
         var randomString = "";
 
-        for (j = 0; j < 1024; ++j) {
+        for (j = 0; j < 128; ++j) {
             randomString += String.fromCharCode(Math.random() * 90 + 33);
         }
 
@@ -19,11 +19,11 @@
             profile: {
                 age: Math.round(Math.random() * 100),
                 salary: Math.round(Math.random() * 10000000) / 100,
-                project: randomString.substr(64, 128)
+                project: randomString.substr(32, 64)
             },
             alias: {
-                name: randomString.substr(64, 256),
-                reference: randomString.substr(300, 256)
+                name: randomString.substr(64, 64),
+                reference: randomString.substr(15, 70)
             }
         };
 
