@@ -65,6 +65,14 @@
     }
   ],
   "outputs": {
+    "Endpoint": {
+      "type": "string",
+      "value": "[listKeys(variables('Account Id'), '2015-04-08').documentEndpoint]"
+    },
+    "Primary Key": {
+      "type": "string",
+      "value": "[listKeys(variables('Account Id'), '2015-04-08').primaryMasterKey]"
+    },
     "Target Config URL": {
       "type": "string",
       "value": "[variables('Target URL')]"

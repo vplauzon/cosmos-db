@@ -43,7 +43,7 @@
             });
 
         if (!accepted) {
-            context.getResponse().setBody("Couldn't rearch the record count ; stopped at " + recordCreated);
+            context.getResponse().setBody(recordCreated);
         }
     }
 }
