@@ -17,7 +17,7 @@ namespace TestConsoleApp
         private const int RECORD_COUNT = 25000;
 
         private static readonly DocumentClient _client =
-                new DocumentClient(new Uri(ENDPOINT), KEY);
+            new DocumentClient(new Uri(ENDPOINT), KEY);
         private static readonly Uri _collectionUri =
             UriFactory.CreateDocumentCollectionUri(DB, COLLECTION);
         private static readonly RequestOptions _defaultRequestOptions = new RequestOptions
@@ -33,8 +33,8 @@ namespace TestConsoleApp
 
         private static async Task MainAsync()
         {
-            //await FillPartitionAsync();
-            await QueryAsync();
+            await FillPartitionAsync();
+            //await QueryAsync();
         }
 
         private static async Task QueryAsync()

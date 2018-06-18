@@ -30,12 +30,13 @@
             collection.getSelfLink(),
             documentToCreate,
             function (err, documentCreated) {
+                ++recordCreated;
                 if (err) {
                     throw new Error('Error' + err.message);
                 }
-                else if (recordCreated + 1 < recordCount) {
+                else if (recordCreated < recordCount) {
                     createRecord(
-                        recordCreated + 1,
+                        recordCreated,
                         //  Shuffle the random string
                         randomString.substr(100, 156) + randomString.substr(0, 100));
                 }
