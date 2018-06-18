@@ -25,6 +25,7 @@
   <ItemGroup>
     <Content Include="azuredeploy.json" />
     <Content Include="azuredeploy.parameters.json" />
+    <None Include="cosmos\c-query-continuation-both-sides.js" />
     <None Include="cosmos\b-query-continuation.js" />
     <None Include="cosmos\a-query-flat.js" />
     <None Include="cosmos\fill-partition-sproc.js" />

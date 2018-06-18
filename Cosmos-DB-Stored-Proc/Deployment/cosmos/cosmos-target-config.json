@@ -25,6 +25,10 @@
             {
               "name": "b-query-continuation",
               "targetUrl": "b-query-continuation.js"
+            },
+            {
+              "name": "c-query-continuation-both-sides",
+              "targetUrl": "c-query-continuation-both-sides.js"
             }
           ]
         }

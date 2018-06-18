@@ -1,4 +1,12 @@
-﻿function countOnes() {
+﻿//  Flat query:  simply do the query in a sproc
+//
+//  We implement a "SELECT * FROM c WHERE c.oneThird=1" by doing a
+//  "SELECT * FROM c" and then doing the filtering in code
+//
+//  Problem:  Although this sproc is simple, it doesn't scale.
+//  It only select a page of result and hence won't return a good result
+//  if the partition has a few thousand records.
+function countOnes() {
     var response = getContext().getResponse();
     var collection = getContext().getCollection();
     var oneCount = 0;

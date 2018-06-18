@@ -1,22 +1,28 @@
-﻿//  Query with continuation:  do the query in a sproc and continue paging the results
+﻿//  Query with continuation on both sides:  do the query in a sproc and continue paging the results
+//  ; the sproc returns continuation token so it can be called multiple times and get around the
+//  5 seconds limit.
 //
 //  We implement a "SELECT * FROM c WHERE c.oneThird=1" by doing a
 //  "SELECT * FROM c" and then doing the filtering in code
-//
-//  Problem:  Although this sproc implements continuation on the server side and scale
-//  better, it won't scale to tens of thousands of records.  Cosmos DB imposes a 5 seconds
-//  limit on any query which will force the sproc to stop.  When it does it will throw the
-//  the exception at the end of the sproc.
-function countOnes() {
+function countOnes(sprocContinuationToken) {
     var response = getContext().getResponse();
     var collection = getContext().getCollection();
     var oneCount = 0;
 
-    //  Start a recursion
-    query();
+    if (sprocContinuationToken) {   //  Parse the token
+        var token = JSON.parse(sprocContinuationToken);
 
-    function query(continuation) {
-        var requestOptions = { continuation: continuation };
+        //  Retrieve "count so far"
+        oneCount = token.countSoFar;
+        //  Retrieve query continuation token to continue paging
+        query(token.queryContinuationToken);
+    }
+    else {  //  Start a recursion
+        query();
+    }
+
+    function query(queryContinuation) {
+        var requestOptions = { continuation: queryContinuation };
         //  Query all documents
         var isAccepted = collection.queryDocuments(
             collection.getSelfLink(),
@@ -44,12 +50,17 @@ function countOnes() {
                     query(responseOptions.continuation)
                 } else {
                     //  Return the count in the response
-                    response.setBody(oneCount);
+                    response.setBody({ count: oneCount, queryContinuation: null });
                 }
             });
 
         if (!isAccepted) {
-            throw new Error('The query was not accepted by the server.');
+            var sprocToken = JSON.stringify({
+                countSoFar: oneCount,
+                queryContinuationToken: queryContinuation
+            });
+
+            response.setBody({ count: null, continuation: sprocToken });
         }
     }
 }
