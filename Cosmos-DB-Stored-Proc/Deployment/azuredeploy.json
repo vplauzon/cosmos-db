@@ -67,7 +67,7 @@
   "outputs": {
     "Endpoint": {
       "type": "string",
-      "value": "[listKeys(variables('Account Id'), '2015-04-08').documentEndpoint]"
+      "value": "[reference(variables('Account Id')).documentEndpoint]"
     },
     "Primary Key": {
       "type": "string",
