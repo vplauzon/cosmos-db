@@ -50,8 +50,8 @@ namespace TestConsoleApp
                     remainCount);
                 var recordsCreated = response.Response;
 
-                Console.WriteLine($"{recordsCreated} records created");
                 remainCount -= recordsCreated;
+                Console.WriteLine($"{recordsCreated} records created, {remainCount} remains");
             }
             Console.WriteLine("Done invoking fillPartition");
         }
