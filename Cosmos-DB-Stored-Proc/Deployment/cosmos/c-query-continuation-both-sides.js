@@ -12,6 +12,12 @@ function countOnes(sprocContinuationToken) {
     if (sprocContinuationToken) {   //  Parse the token
         var token = JSON.parse(sprocContinuationToken);
 
+        if (!token.countSoFar) {
+            throw new Error('Bad token format:  no count');
+        }
+        if (!token.queryContinuationToken) {
+            throw new Error('Bad token format:  no continuation');
+        }
         //  Retrieve "count so far"
         oneCount = token.countSoFar;
         //  Retrieve query continuation token to continue paging
