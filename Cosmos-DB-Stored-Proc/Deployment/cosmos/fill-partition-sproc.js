@@ -33,7 +33,7 @@
                 if (err) {
                     throw new Error('Error' + err.message);
                 }
-                else if (recordCreated < recordCount) {
+                else if (recordCreated + 1 < recordCount) {
                     createRecord(
                         recordCreated + 1,
                         //  Shuffle the random string

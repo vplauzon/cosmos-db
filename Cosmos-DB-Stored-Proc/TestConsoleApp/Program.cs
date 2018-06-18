@@ -14,7 +14,7 @@ namespace TestConsoleApp
         private const string DB = "my-db";
         private const string COLLECTION = "my-collection";
         private const string DEFAULT_PARTITION_KEY = "ABC";
-        private const int RECORD_COUNT = 10000;
+        private const int RECORD_COUNT = 25000;
 
         private static readonly DocumentClient _client =
                 new DocumentClient(new Uri(ENDPOINT), KEY);
