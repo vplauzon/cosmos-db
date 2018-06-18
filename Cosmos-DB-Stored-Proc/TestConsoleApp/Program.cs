@@ -33,7 +33,36 @@ namespace TestConsoleApp
 
         private static async Task MainAsync()
         {
-            await FillPartitionAsync();
+            //await FillPartitionAsync();
+            await QueryAsync();
+        }
+
+        private static async Task QueryAsync()
+        {
+            string continuation = null;
+
+            Console.WriteLine("Invoke query-c");
+            do
+            {
+                var response = await _client.ExecuteStoredProcedureAsync<QueryOutput>(
+                    UriFactory.CreateStoredProcedureUri(DB, COLLECTION, "c-query-continuation-both-sides"),
+                    _defaultRequestOptions,
+                    continuation);
+                var output = response.Response;
+
+                if (output.Count.HasValue)
+                {
+                    Console.WriteLine($"Count:  {output.Count}");
+                    continuation = null;
+                }
+                else
+                {
+                    continuation = output.Continuation;
+                    Console.WriteLine($"Continuation:  {continuation}");
+                }
+            }
+            while (continuation != null);
+            Console.WriteLine("Done invoking query-c");
         }
 
         private static async Task FillPartitionAsync()

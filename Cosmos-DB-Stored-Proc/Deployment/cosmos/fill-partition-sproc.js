@@ -13,7 +13,7 @@
         var documentToCreate = {
             part: partitionKey,
             recordNumber: recordCreated,
-            oneThird: Math.round(Math.random() * 3),
+            oneThird: recordCreated % 3,
             name: randomString.substr(0, 64),
             profile: {
                 age: Math.round(Math.random() * 100),
