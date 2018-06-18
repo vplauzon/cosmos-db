@@ -1,16 +1,15 @@
 ﻿function createRecords(partitionKey, recordCount) {
     var context = getContext();
     var collection = context.getCollection();
+    var randomString = "";
 
-    createRecord(0);
+    for (j = 0; j < 256; ++j) {
+        randomString += String.fromCharCode(Math.random() * 90 + 33);
+    }
 
-    function createRecord(recordCreated) {
-        var randomString = "";
+    createRecord(0, randomString);
 
-        for (j = 0; j < 128; ++j) {
-            randomString += String.fromCharCode(Math.random() * 90 + 33);
-        }
-
+    function createRecord(recordCreated, randomString) {
         var documentToCreate = {
             part: partitionKey,
             recordNumber: recordCreated,
@@ -19,11 +18,11 @@
             profile: {
                 age: Math.round(Math.random() * 100),
                 salary: Math.round(Math.random() * 10000000) / 100,
-                project: randomString.substr(32, 64)
+                project: randomString.substr(64, 64)
             },
             alias: {
-                name: randomString.substr(64, 64),
-                reference: randomString.substr(15, 70)
+                name: randomString.substr(128, 64),
+                reference: randomString.substr(192, 64)
             }
         };
 
@@ -35,7 +34,10 @@
                     throw new Error('Error' + err.message);
                 }
                 else if (recordCreated < recordCount) {
-                    createRecord(recordCreated + 1);
+                    createRecord(
+                        recordCreated + 1,
+                        //  Shuffle the random string
+                        randomString.substr(100, 156) + randomString.substr(0, 100));
                 }
                 else {
                     context.getResponse().setBody(recordCreated);
