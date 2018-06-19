@@ -27,6 +27,7 @@ function countOnes(sprocContinuationToken) {
         query();
     }
 
+    //  Function within the main stored procedure function
     function query(queryContinuation) {
         var requestOptions = { continuation: queryContinuation };
         //  Query all documents

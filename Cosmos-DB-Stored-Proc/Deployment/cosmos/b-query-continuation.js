@@ -15,6 +15,7 @@ function countOnes() {
     //  Start a recursion
     query();
 
+    //  Function within the main stored procedure function
     function query(continuation) {
         var requestOptions = { continuation: continuation };
         //  Query all documents
